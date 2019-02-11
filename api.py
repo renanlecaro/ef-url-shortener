@@ -274,7 +274,7 @@ short url redirect endpoint
 """
 
 
-@hug.get('/s/{code}')
+@hug.get('/{code}')
 def go_to(request, response, code):
     """
     HOST/{code} proxy pass

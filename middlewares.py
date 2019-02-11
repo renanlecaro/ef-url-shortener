@@ -4,7 +4,7 @@ from db import DB
 
 
 class HostEnvMiddleware:
-    MAX_HOST_LEN = 15
+    MAX_HOST_LEN = 30
 
     def process_request(self, request, response):
         host = os.environ.get('HOST')

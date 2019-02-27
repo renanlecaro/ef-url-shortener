@@ -1,7 +1,7 @@
 import datetime
 
 import hug
-from falcon import HTTP_400, HTTP_409, HTTP_201, HTTP_404, HTTP_500
+from falcon import HTTP_400, HTTP_409, HTTP_200, HTTP_201, HTTP_404, HTTP_500
 
 from db import DB
 from bson.objectid import ObjectId
@@ -123,40 +123,29 @@ def short_url(request, response):
         response.status = HTTP_400
         return {'error': 'long_url is not a valid URL'}
 
-    # validate code
-    code = request.params.get('code')
-    if code and len(code) > DB.MAX_CODE_LEN:
-        response.status = HTTP_400
-        return {'error': 'Code param must have a max length of 9'}
 
-    # check if url already exists
-    if code:
-        query = db.find_one_url({'code': code,
-                                 'created_by': ObjectId(user['_id'])})
-    else:
-        query = db.find_one_url({'long_url': long_url,
-                                 'created_by': ObjectId(user['_id'])})
+    query = db.find_one_url({'long_url': long_url})
 
     exists = db.find_one_url(query)
     if exists:
-        response.status = HTTP_409
-        return {'error': 'long_url already exists'}
+        short_url=exists['short_url']
+        response.status = HTTP_200
+    else:
+        # create url
+        code =  db.generate_url_code(host)
+        short_url = '{}/{}'.format(host, code)
+        url = {
+            'short_url': short_url,
+            'long_url': long_url,
+            'code': code,
+            'url_access': [],
+            'created_at': datetime.datetime.now(),
+            'created_by': ObjectId(user['_id']),
+        }
 
-    # create url
-    code = code or db.generate_url_code(host)
-    short_url = '{}/{}'.format(host, code)
-    url = {
-        'short_url': short_url,
-        'long_url': long_url,
-        'code': code,
-        'url_access': [],
-        'created_at': datetime.datetime.now(),
-        'created_by': ObjectId(user['_id']),
-    }
+        db.insert_url(url)
+        response.status = HTTP_201
 
-    db.insert_url(url)
-
-    response.status = HTTP_201
     return {'short_url': short_url}
 
 

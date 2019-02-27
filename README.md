@@ -91,7 +91,7 @@ Parameters:
 Example request:
 
 ```bash
-curl -XPOST http://host/api/user -d '{"email": "a valid email"} -H 'Content-Type: application/json'
+curl -XPOST http://host/api/user -d '{"email": "a valid email"}' -H 'Content-Type: application/json'
 ```
 
 Example response:
